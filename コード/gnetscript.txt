@@ -1,0 +1,80 @@
+bool mjump = false;
+	public MGTYPE mgtype;
+
+	public float walkForce = 30f;
+	public float flyForce = 50f;
+	public float maxWalkSpeed = 3f;
+	public float maxFlySpeed = 5f;
+
+	private bool facingRight = true;
+	public float SPEED = 1f;
+	
+
+
+
+
+
+
+
+
+
+
+void Update () {
+
+
+		//左右キーの入力
+		float h = Input.GetAxis("Horizontal");
+
+
+		if ((h > 0 && !facingRight) || (h < 0 && facingRight)) {
+			facingRight = (h > 0);
+			transform.localScale = new Vector3 ((facingRight ? 1 : -1), 1, 1);
+		}
+
+		//上下キーの入力
+		float v = Input.GetAxis("Vertical");
+		if (Input.GetKeyDown (KeyCode.X)) {
+			GetComponent<Rigidbody2D> ().velocity=(new Vector2 (0f, SPEED));
+		}
+
+		//左右キーの入力にあわせて、横方向の力を加える（歩く）
+		GetComponent<Rigidbody2D>().velocity=(Vector2.right * h * 30f);
+
+		//もし、上キーの入力だったら（下キーは無視する）
+		if(v > 0){
+			//上方向の力を加える（飛ぶ）
+			GetComponent<Rigidbody2D>().velocity=(Vector2.up * v * 50f);
+	}
+
+
+		//制限速度以下だったら、という条件を追加
+		if(GetComponent<Rigidbody2D>().velocity.x < maxWalkSpeed)
+		{
+			GetComponent<Rigidbody2D> ().velocity = (Vector2.right * h * walkForce);
+		}
+
+		//制限速度以下だったら、という条件を追加
+		if(v > 0 && GetComponent<Rigidbody2D>().velocity.y < maxFlySpeed)
+		{
+			GetComponent<Rigidbody2D> ().velocity = (Vector2.up * v * flyForce);
+		}
+
+		//制限速度より大きかったら
+		if(Mathf.Abs(GetComponent<Rigidbody2D>().velocity.x) > maxWalkSpeed)
+		{
+			//自分の速度を制限速度に合わせる
+			//飛ぶ動きは、重力がかかって勝手に減速するので、そのまま
+			//Mathf.Sign -> 値の符号を取得
+			GetComponent<Rigidbody2D>().velocity = new Vector2(
+				Mathf.Sign(GetComponent<Rigidbody2D>().velocity.x) * maxWalkSpeed,
+				GetComponent<Rigidbody2D>().velocity.y
+			);
+		}
+	}
+
+
+
+	void OnCollisionEnter2D(Collision2D c){
+		GetComponent<Animator> ().SetTrigger ("GoRun");
+		mjump = false;
+	}
